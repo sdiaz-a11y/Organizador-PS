@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import Byte from "./Byte";
 
 const traducir = (m: string) => {
   if (/Invalid login/i.test(m)) return "Correo o contraseña incorrectos.";
@@ -44,8 +45,15 @@ export default function Auth() {
 
   return (
     <main className="centro">
+      <div className="acceso">
+      <div className="mascota-login">
+        <Byte pose="presentando" alto={380} className="flota" />
+      </div>
       <form className="panel" onSubmit={enviar}>
-        <h1>Organizador</h1>
+        <div className="marca">
+          <img src="/byte/logo.png" alt="" width={40} height={40} />
+          <h1>Organizador</h1>
+        </div>
         <p className="suave">Aquí viven las ideas, las notas y el avance del equipo. Entra para verlas.</p>
         {registro && (
           <label>
@@ -76,6 +84,7 @@ export default function Auth() {
           {registro ? "Ya tengo cuenta" : "Crear una cuenta"}
         </button>
       </form>
+      </div>
     </main>
   );
 }

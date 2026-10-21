@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Organizador · Programación de Soporte",
   description: "Tablero compartido para ideas, notas y avance del equipo de programación de soporte técnico.",
   robots: { index: false, follow: false },
+  appleWebApp: { capable: true, title: "Byte PS", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {

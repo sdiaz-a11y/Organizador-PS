@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase, configurado } from "@/lib/supabase";
 import Auth from "./Auth";
+import Byte from "./Byte";
 import Board from "./Board";
 
 export default function App() {
@@ -36,6 +37,15 @@ export default function App() {
       </main>
     );
   }
-  if (!listo) return <main className="centro"><p className="suave">Un momento…</p></main>;
+  if (!listo) {
+    return (
+      <main className="centro">
+        <div className="cargando">
+          <Byte pose="saludando" alto={150} className="flota" />
+          <p className="suave">Un momento…</p>
+        </div>
+      </main>
+    );
+  }
   return session ? <Board session={session} /> : <Auth />;
 }

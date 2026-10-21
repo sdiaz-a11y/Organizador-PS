@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
-import { ESTADOS, TIPOS, nombreEstado, nombreTipo } from "@/lib/types";
+import { CONSEJOS, ESTADOS, TIPOS, nombreEstado, nombreTipo } from "@/lib/types";
 import type { Estado, Perfil, Tarea } from "@/lib/types";
+import Byte from "./Byte";
 import TaskDrawer from "./TaskDrawer";
 
 const iniciales = (n: string) =>
@@ -23,6 +24,18 @@ export default function Board({ session }: { session: Session }) {
   const [arrastrando, setArrastrando] = useState<string | null>(null);
   const [sobre, setSobre] = useState<Estado | null>(null);
   const [tema, setTema] = useState<"light" | "dark">("light");
+  const [festejo, setFestejo] = useState(false);
+  const [consejo, setConsejo] = useState(0);
+
+  useEffect(() => {
+    setConsejo(Math.floor(Math.random() * CONSEJOS.length));
+  }, []);
+
+  useEffect(() => {
+    if (!festejo) return;
+    const id = setTimeout(() => setFestejo(false), 3200);
+    return () => clearTimeout(id);
+  }, [festejo]);
 
   useEffect(() => {
     setTema(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
@@ -103,6 +116,7 @@ export default function Board({ session }: { session: Session }) {
       return;
     }
     if (cambioEstado) {
+      if (estado === "hecho") setFestejo(true);
       await supabase.from("notas").insert({
         tarea_id: id,
         sistema: true,
@@ -125,9 +139,12 @@ export default function Board({ session }: { session: Session }) {
   return (
     <div className="app">
       <header className="barra">
-        <h1>
-          Organizador <span className="suave">· Soporte técnico</span>
-        </h1>
+        <div className="marca">
+          <img src="/byte/logo.png" alt="" width={36} height={36} />
+          <h1>
+            Organizador <span className="suave">· Soporte técnico</span>
+          </h1>
+        </div>
         <div className="barra-der">
           <span className="suave chico">{nombre(yo)}</span>
           <button
@@ -178,6 +195,16 @@ export default function Board({ session }: { session: Session }) {
 
       {error && <p className="aviso">{error}</p>}
 
+      {tareas.length === 0 && !error && (
+        <div className="bienvenida">
+          <Byte pose="laptop" alto={120} />
+          <div>
+            <h2>Aún no hay ideas</h2>
+            <p className="suave">Soy Byte. Escribe la primera idea arriba y la ponemos a trabajar.</p>
+          </div>
+        </div>
+      )}
+
       <main className="tablero">
         {ESTADOS.map((col) => {
           const items = visibles.filter((t) => t.estado === col.id);
@@ -202,7 +229,12 @@ export default function Board({ session }: { session: Session }) {
               <h2>
                 {col.nombre} <span className="cuenta">{items.length}</span>
               </h2>
-              {items.length === 0 && <p className="vacio">{col.ayuda}</p>}
+              {items.length === 0 && (
+                <div className="vacio">
+                  <Byte pose={col.pose} alto={84} />
+                  <p>{col.ayuda}</p>
+                </div>
+              )}
               {items.map((t) => (
                 <article
                   key={t.id}
@@ -243,6 +275,20 @@ export default function Board({ session }: { session: Session }) {
           );
         })}
       </main>
+
+      <footer className="consejo">
+        <Byte pose="guino" alto={64} />
+        <p>
+          <strong>Consejo de Byte:</strong> {CONSEJOS[consejo]}
+        </p>
+      </footer>
+
+      {festejo && (
+        <div className="festejo" role="status">
+          <Byte pose="celebrando" alto={110} />
+          <p>¡Buen trabajo, equipo!</p>
+        </div>
+      )}
 
       {sel && (
         <TaskDrawer

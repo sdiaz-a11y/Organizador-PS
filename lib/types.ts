@@ -1,9 +1,17 @@
 export const ESTADOS = [
-  { id: "idea", nombre: "Ideas", ayuda: "Aquí caen las ideas nuevas. Escribe una arriba." },
-  { id: "analisis", nombre: "En análisis", ayuda: "Se está revisando el alcance." },
-  { id: "desarrollo", nombre: "En desarrollo", ayuda: "Alguien está programando esto." },
-  { id: "pruebas", nombre: "En pruebas", ayuda: "Listo para probar o revisar." },
-  { id: "hecho", nombre: "Hecho", ayuda: "Terminado y en uso." },
+  { id: "idea", nombre: "Ideas", ayuda: "Aquí caen las ideas nuevas. Escribe una arriba.", pose: "pensando" },
+  { id: "analisis", nombre: "En análisis", ayuda: "Se está revisando el alcance.", pose: "datos" },
+  { id: "desarrollo", nombre: "En desarrollo", ayuda: "Alguien está programando esto.", pose: "laptop" },
+  { id: "pruebas", nombre: "En pruebas", ayuda: "Listo para probar o revisar.", pose: "serio" },
+  { id: "hecho", nombre: "Hecho", ayuda: "Cuando algo termine, arrástralo aquí.", pose: "celebrando" },
+] as const;
+
+export const CONSEJOS = [
+  "Cuando una tarea pase a Hecho, anota en las notas qué funcionó y qué no.",
+  "Asigna un responsable a cada idea que pase a análisis: así nadie la repite.",
+  "Arrastra la tarjeta para cambiar de columna; el cambio queda registrado solo.",
+  "Una idea corta y clara vale más que una larga: los detalles van en la descripción.",
+  "Usa la prioridad alta solo para lo que de verdad no puede esperar.",
 ] as const;
 
 export const PRIORIDADES = ["alta", "media", "baja"] as const;
