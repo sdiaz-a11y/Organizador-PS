@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Byte from "./Byte";
+import InstalarApp from "./InstalarApp";
 
 const traducir = (m: string) => {
   if (/Invalid login/i.test(m)) return "Correo o contraseña incorrectos.";
@@ -83,6 +84,7 @@ export default function Auth() {
         <button type="button" className="enlace" onClick={() => { setRegistro(!registro); setMsg(""); }}>
           {registro ? "Ya tengo cuenta" : "Crear una cuenta"}
         </button>
+        <InstalarApp className="enlace" />
       </form>
       </div>
     </main>

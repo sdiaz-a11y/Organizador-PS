@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { CONSEJOS, ESTADOS, TIPOS, nombreEstado, nombreTipo } from "@/lib/types";
 import type { Estado, Perfil, Tarea } from "@/lib/types";
 import Byte from "./Byte";
+import InstalarApp from "./InstalarApp";
 import TaskDrawer from "./TaskDrawer";
 
 const iniciales = (n: string) =>
@@ -147,6 +148,7 @@ export default function Board({ session }: { session: Session }) {
         </div>
         <div className="barra-der">
           <span className="suave chico">{nombre(yo)}</span>
+          <InstalarApp />
           <button
             className="icono"
             onClick={alternarTema}
