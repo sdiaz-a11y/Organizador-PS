@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { esErrorDeRed, guardarCache, leerCache, limpiarCache } from "@/lib/cache";
 import { CONSEJOS, ESTADOS, TIPOS, nombreEstado, nombreTipo } from "@/lib/types";
 import type { Estado, Perfil, Tarea } from "@/lib/types";
 import Byte from "./Byte";
@@ -14,8 +15,10 @@ const iniciales = (n: string) =>
 
 export default function Board({ session }: { session: Session }) {
   const yo = session.user.id;
-  const [tareas, setTareas] = useState<Tarea[]>([]);
-  const [perfiles, setPerfiles] = useState<Perfil[]>([]);
+  const [tareas, setTareas] = useState<Tarea[]>(() => leerCache<Tarea[]>("tareas") ?? []);
+  const [perfiles, setPerfiles] = useState<Perfil[]>(() => leerCache<Perfil[]>("perfiles") ?? []);
+  const [enLinea, setEnLinea] = useState(() => navigator.onLine);
+  const [sync, setSync] = useState<string | null>(() => leerCache<string>("sync"));
   const [error, setError] = useState("");
   const [nuevo, setNuevo] = useState("");
   const [busca, setBusca] = useState("");
@@ -47,11 +50,40 @@ export default function Board({ session }: { session: Session }) {
       supabase.from("tareas").select("*"),
       supabase.from("perfiles").select("id,nombre"),
     ]);
-    if (t.error) return setError(`No se pudo cargar el tablero: ${t.error.message}`);
+    if (t.error) {
+      if (esErrorDeRed(t.error.message)) return setEnLinea(false);
+      return setError(`No se pudo cargar el tablero: ${t.error.message}`);
+    }
+    setEnLinea(true);
     setError("");
     setTareas(t.data as Tarea[]);
     setPerfiles((p.data ?? []) as Perfil[]);
   }, []);
+
+  useEffect(() => {
+    if (!enLinea) return;
+    guardarCache("tareas", tareas);
+    guardarCache("perfiles", perfiles);
+    const ahora = new Date().toISOString();
+    guardarCache("sync", ahora);
+    setSync(ahora);
+  }, [tareas, perfiles, enLinea]);
+
+  useEffect(() => {
+    setEnLinea(navigator.onLine);
+    const dentro = async () => {
+      await supabase.auth.getSession(); // renueva el token si caducó mientras no había red
+      setEnLinea(true);
+      cargar();
+    };
+    const fuera = () => setEnLinea(false);
+    window.addEventListener("online", dentro);
+    window.addEventListener("offline", fuera);
+    return () => {
+      window.removeEventListener("online", dentro);
+      window.removeEventListener("offline", fuera);
+    };
+  }, [cargar]);
 
   useEffect(() => {
     cargar();
@@ -91,7 +123,7 @@ export default function Board({ session }: { session: Session }) {
   async function agregar(e: React.FormEvent) {
     e.preventDefault();
     const titulo = nuevo.trim();
-    if (!titulo) return;
+    if (!titulo || !enLinea) return;
     setNuevo("");
     const { data, error } = await supabase.from("tareas").insert({ titulo }).select().single();
     if (error) return setError(error.message);
@@ -101,7 +133,7 @@ export default function Board({ session }: { session: Session }) {
 
   async function mover(id: string, estado: Estado, antesDe?: string) {
     const t = tareas.find((x) => x.id === id);
-    if (!t) return;
+    if (!t || !enLinea) return;
     const col = tareas.filter((x) => x.estado === estado && x.id !== id).sort((a, b) => a.orden - b.orden);
     let orden: number;
     const i = antesDe ? col.findIndex((x) => x.id === antesDe) : -1;
@@ -156,20 +188,35 @@ export default function Board({ session }: { session: Session }) {
           >
             {tema === "dark" ? "☀" : "☾"}
           </button>
-          <button className="icono" onClick={() => supabase.auth.signOut()}>
+          <button
+            className="icono"
+            onClick={() => {
+              limpiarCache();
+              supabase.auth.signOut();
+            }}
+          >
             Salir
           </button>
         </div>
       </header>
 
+      {!enLinea && (
+        <p className="sin-red" role="status">
+          Sin conexión. Estás viendo lo último guardado en este dispositivo
+          {sync ? ` (${new Date(sync).toLocaleString("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })})` : ""}
+          . Podrás editar cuando vuelva el internet.
+        </p>
+      )}
+
       <form className="nueva" onSubmit={agregar}>
         <input
+          disabled={!enLinea}
           value={nuevo}
           onChange={(e) => setNuevo(e.target.value)}
           placeholder="Escribe una idea y presiona Enter…"
           aria-label="Nueva idea"
         />
-        <button className="primario" disabled={!nuevo.trim()}>
+        <button className="primario" disabled={!nuevo.trim() || !enLinea}>
           Agregar
         </button>
       </form>
@@ -241,7 +288,7 @@ export default function Board({ session }: { session: Session }) {
                 <article
                   key={t.id}
                   className={`tarjeta p-${t.prioridad}${arrastrando === t.id ? " arrastrando" : ""}`}
-                  draggable
+                  draggable={enLinea}
                   tabIndex={0}
                   onDragStart={() => setArrastrando(t.id)}
                   onDragEnd={() => {
@@ -298,6 +345,7 @@ export default function Board({ session }: { session: Session }) {
           tarea={sel}
           perfiles={perfiles}
           yo={yo}
+          enLinea={enLinea}
           nombre={nombre}
           alCerrar={() => setAbierta(null)}
           alError={setError}

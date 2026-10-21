@@ -7,6 +7,17 @@ import Auth from "./Auth";
 import Byte from "./Byte";
 import Board from "./Board";
 
+// Sin red no se puede renovar un token caducado; se reutiliza la sesión guardada para consultar la copia local.
+function sesionGuardada(): Session | null {
+  try {
+    const clave = Object.keys(localStorage).find((k) => /^sb-.*-auth-token$/.test(k));
+    const s = clave ? JSON.parse(localStorage.getItem(clave) ?? "null") : null;
+    return s?.user?.id ? (s as Session) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [listo, setListo] = useState(false);
@@ -17,10 +28,15 @@ export default function App() {
       return;
     }
     supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
+      let s = data.session;
+      if (!s && !navigator.onLine) s = sesionGuardada();
+      setSession(s);
       setListo(true);
     });
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data } = supabase.auth.onAuthStateChange((e, s) => {
+      if (e === "INITIAL_SESSION" && !s && !navigator.onLine) return; // conserva la sesión guardada sin red
+      setSession(s);
+    });
     return () => data.subscription.unsubscribe();
   }, []);
 

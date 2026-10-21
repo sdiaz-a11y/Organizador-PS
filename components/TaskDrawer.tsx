@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { guardarCache, leerCache } from "@/lib/cache";
 import { ESTADOS, PRIORIDADES, TIPOS, nombreEstado } from "@/lib/types";
 import type { Estado, Nota, Perfil, Tarea } from "@/lib/types";
 
@@ -9,6 +10,7 @@ interface Props {
   tarea: Tarea;
   perfiles: Perfil[];
   yo: string;
+  enLinea: boolean;
   nombre: (id: string | null) => string;
   alCerrar: () => void;
   alError: (m: string) => void;
@@ -17,10 +19,10 @@ interface Props {
 const fecha = (s: string) =>
   new Date(s).toLocaleString("es", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
-export default function TaskDrawer({ tarea, perfiles, yo, nombre, alCerrar, alError }: Props) {
+export default function TaskDrawer({ tarea, perfiles, yo, enLinea, nombre, alCerrar, alError }: Props) {
   const [titulo, setTitulo] = useState(tarea.titulo);
   const [descripcion, setDescripcion] = useState(tarea.descripcion);
-  const [notas, setNotas] = useState<Nota[]>([]);
+  const [notas, setNotas] = useState<Nota[]>(() => leerCache<Nota[]>(`notas:${tarea.id}`) ?? []);
   const [texto, setTexto] = useState("");
 
   useEffect(() => {
@@ -30,8 +32,8 @@ export default function TaskDrawer({ tarea, perfiles, yo, nombre, alCerrar, alEr
       .select("*")
       .eq("tarea_id", tarea.id)
       .order("created_at")
-      .then(({ data }) => {
-        if (vivo) setNotas((data ?? []) as Nota[]);
+      .then(({ data, error }) => {
+        if (vivo && !error && data) setNotas(data as Nota[]);
       });
     const canal = supabase
       .channel(`notas-${tarea.id}`)
@@ -46,6 +48,10 @@ export default function TaskDrawer({ tarea, perfiles, yo, nombre, alCerrar, alEr
       supabase.removeChannel(canal);
     };
   }, [tarea.id]);
+
+  useEffect(() => {
+    if (enLinea) guardarCache(`notas:${tarea.id}`, notas);
+  }, [notas, enLinea, tarea.id]);
 
   useEffect(() => {
     const f = (e: KeyboardEvent) => {
@@ -106,6 +112,7 @@ export default function TaskDrawer({ tarea, perfiles, yo, nombre, alCerrar, alEr
           </button>
         </div>
 
+        <fieldset className="plano" disabled={!enLinea}>
         <label>
           Título
           <input
@@ -199,6 +206,7 @@ export default function TaskDrawer({ tarea, perfiles, yo, nombre, alCerrar, alEr
         <button className="peligro" onClick={eliminar}>
           Eliminar tarea
         </button>
+        </fieldset>
       </aside>
     </div>
   );
