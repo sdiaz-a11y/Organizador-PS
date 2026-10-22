@@ -10,6 +10,8 @@ import Byte from "./Byte";
 import InstalarApp from "./InstalarApp";
 import TaskDrawer from "./TaskDrawer";
 
+const sigEstado = (e: Estado) => ESTADOS[ESTADOS.findIndex((x) => x.id === e) + 1]?.id;
+
 const iniciales = (n: string) =>
   n.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("") || "?";
 
@@ -29,6 +31,7 @@ export default function Board({ session }: { session: Session }) {
   const [sobre, setSobre] = useState<Estado | null>(null);
   const [tema, setTema] = useState<"light" | "dark">("light");
   const [festejo, setFestejo] = useState(false);
+  const [activa, setActiva] = useState<Estado>("idea");
   const [consejo, setConsejo] = useState(0);
 
   useEffect(() => {
@@ -213,7 +216,7 @@ export default function Board({ session }: { session: Session }) {
           disabled={!enLinea}
           value={nuevo}
           onChange={(e) => setNuevo(e.target.value)}
-          placeholder="Escribe una idea y presiona Enter…"
+          placeholder="Escribe una idea…"
           aria-label="Nueva idea"
         />
         <button className="primario" disabled={!nuevo.trim() || !enLinea}>
@@ -224,7 +227,7 @@ export default function Board({ session }: { session: Session }) {
       <div className="filtros">
         <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar…" aria-label="Buscar" />
         <select value={fResp} onChange={(e) => setFResp(e.target.value)} aria-label="Responsable">
-          <option value="">Todos los responsables</option>
+          <option value="">Responsable</option>
           <option value="sin">Sin asignar</option>
           {perfiles.map((p) => (
             <option key={p.id} value={p.id}>
@@ -233,7 +236,7 @@ export default function Board({ session }: { session: Session }) {
           ))}
         </select>
         <select value={fTipo} onChange={(e) => setFTipo(e.target.value)} aria-label="Tipo">
-          <option value="">Todos los tipos</option>
+          <option value="">Tipo</option>
           {TIPOS.map((t) => (
             <option key={t.id} value={t.id}>
               {t.nombre}
@@ -254,13 +257,31 @@ export default function Board({ session }: { session: Session }) {
         </div>
       )}
 
+      <div className="pestanas" role="tablist" aria-label="Pasos del flujo">
+        {ESTADOS.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            role="tab"
+            aria-selected={activa === c.id}
+            className={activa === c.id ? "activa" : ""}
+            onClick={() => setActiva(c.id)}
+          >
+            <span className="cuenta">{visibles.filter((t) => t.estado === c.id).length}</span>
+            {c.corto}
+          </button>
+        ))}
+      </div>
+
       <main className="tablero">
         {ESTADOS.map((col) => {
           const items = visibles.filter((t) => t.estado === col.id);
           return (
             <section
               key={col.id}
-              className={`columna${sobre === col.id ? " sobre" : ""}`}
+              id={`col-${col.id}`}
+              className={`columna${sobre === col.id ? " sobre" : ""}${activa === col.id ? " activa" : ""}`}
+              role="tabpanel"
               onDragOver={(e) => {
                 e.preventDefault();
                 setSobre(col.id);
@@ -318,6 +339,18 @@ export default function Board({ session }: { session: Session }) {
                       </span>
                     )}
                   </div>
+                  {enLinea && sigEstado(t.estado) && (
+                    <button
+                      type="button"
+                      className="siguiente"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        mover(t.id, sigEstado(t.estado)!);
+                      }}
+                    >
+                      Pasar a {nombreEstado(sigEstado(t.estado)!)} →
+                    </button>
+                  )}
                 </article>
               ))}
             </section>

@@ -115,3 +115,52 @@ li.vacio { display: block; text-align: left; }
 .sin-red { background: color-mix(in srgb, var(--media) 14%, transparent); border: 1px solid var(--media); padding: 8px 12px; border-radius: 8px; margin: 0 0 10px; font-size: .9rem; }
 .plano { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .plano:disabled { opacity: .7; }
+
+/* ---- Móvil ---- */
+.pestanas, .siguiente { display: none; }
+.app { padding-top: calc(16px + env(safe-area-inset-top)); padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+.centro { padding-top: calc(16px + env(safe-area-inset-top)); padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+.cajon { padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
+.siguiente { margin-top: 8px; width: 100%; justify-content: center; font-size: .8rem; padding: 8px; color: var(--suave); background: transparent; }
+
+@media (pointer: coarse) {
+  .siguiente { display: flex; min-height: 40px; }
+  .tarjeta { cursor: pointer; }
+}
+
+@media (max-width: 760px) {
+  .app { padding-left: 12px; padding-right: 12px; }
+  input, select, textarea { font-size: 16px; }
+  button { min-height: 44px; }
+  .barra-der .chico { display: none; }
+  .barra h1 { font-size: 1.05rem; }
+  .filtros { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .filtros input { grid-column: 1 / -1; }
+  .nueva { margin-bottom: 8px; }
+  .pestanas { display: flex; gap: 6px; overflow-x: auto; margin: 0 -12px 10px; padding: 0 12px 2px; scrollbar-width: none; }
+  .pestanas::-webkit-scrollbar { display: none; }
+  .pestanas button { flex: 0 0 auto; min-height: 36px; padding: 6px 12px; border-radius: 99px; font-size: .85rem; display: flex; align-items: center; gap: 6px; }
+  .tablero { margin: 0 -12px; padding: 0 12px 12px; scroll-padding-inline: 12px; gap: 10px; grid-template-columns: repeat(5, 86vw); }
+  .rejilla { grid-template-columns: 1fr 1fr; }
+  .festejo { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); justify-content: center; }
+}
+@media (max-width: 340px) {
+  .rejilla { grid-template-columns: 1fr; }
+  .marca h1 .suave { display: none; }
+}
+
+.barra-der button { white-space: nowrap; }
+@media (max-width: 760px) { .barra-der { gap: 6px; } .barra-der .icono { padding: 6px 10px; font-size: .9rem; } }
+
+/* Móvil: cada paso del flujo es una pestaña y solo se ve una columna (sin scroll lateral) */
+@media (max-width: 760px) {
+  .pestanas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; overflow: visible; margin: 0 0 10px; padding: 0; }
+  .pestanas button { min-height: 56px; padding: 6px 2px; border-radius: 10px; font-size: .72rem; flex-direction: column; justify-content: center; gap: 4px; line-height: 1.1; min-width: 0; overflow-wrap: anywhere; }
+  .pestanas button .cuenta { font-size: .85rem; font-weight: 700; padding: 0 8px; }
+  .pestanas button.activa { background: var(--acento); border-color: var(--acento); color: var(--acento-txt); font-weight: 700; }
+  .pestanas button.activa .cuenta { background: color-mix(in srgb, var(--acento-txt) 18%, transparent); }
+  .tablero { display: block; margin: 0; padding: 0 0 12px; overflow: visible; scroll-snap-type: none; }
+  .columna { display: none; scroll-snap-align: none; }
+  .columna.activa { display: flex; }
+  .columna > h2 { display: none; }
+}

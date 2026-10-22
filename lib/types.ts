@@ -1,9 +1,9 @@
 export const ESTADOS = [
-  { id: "idea", nombre: "Ideas", ayuda: "Aquí caen las ideas nuevas. Escribe una arriba.", pose: "pensando" },
-  { id: "analisis", nombre: "En análisis", ayuda: "Se está revisando el alcance.", pose: "datos" },
-  { id: "desarrollo", nombre: "En desarrollo", ayuda: "Alguien está programando esto.", pose: "laptop" },
-  { id: "pruebas", nombre: "En pruebas", ayuda: "Listo para probar o revisar.", pose: "serio" },
-  { id: "hecho", nombre: "Hecho", ayuda: "Cuando algo termine, arrástralo aquí.", pose: "celebrando" },
+  { id: "idea", nombre: "Ideas", corto: "Ideas", ayuda: "Aquí caen las ideas nuevas. Escribe una arriba.", pose: "pensando" },
+  { id: "analisis", nombre: "En análisis", corto: "Análisis", ayuda: "Se está revisando el alcance.", pose: "datos" },
+  { id: "desarrollo", nombre: "En desarrollo", corto: "Desarrollo", ayuda: "Alguien está programando esto.", pose: "laptop" },
+  { id: "pruebas", nombre: "En pruebas", corto: "Pruebas", ayuda: "Listo para probar o revisar.", pose: "serio" },
+  { id: "hecho", nombre: "Hecho", corto: "Hecho", ayuda: "Cuando algo termine, arrástralo aquí.", pose: "celebrando" },
 ] as const;
 
 export const CONSEJOS = [
